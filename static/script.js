@@ -38,9 +38,14 @@ async function checkAuth() {
             currentUser = data.user;
             updateUserUI();
             loadUserSettings();
+        } else if (response.status === 401) {
+            currentUser = null;
+            updateUserUI();
         }
     } catch (error) {
         console.log('Not authenticated');
+        currentUser = null;
+        updateUserUI();
     }
 }
 
