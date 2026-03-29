@@ -55,14 +55,27 @@ function updateUserUI() {
     const userAvatar = document.getElementById('userAvatar');
     const userName = document.getElementById('userName');
     const userId = document.getElementById('userId');
+    const userRole = document.getElementById('userRole');
+    const adminSection = document.getElementById('adminSection');
     
     if (currentUser) {
         userInfo.style.display = 'flex';
         userAvatar.src = currentUser.avatar || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6 0-8 3-8 6v2h16v-2c0-3-2-6-8-6z"/></svg>';
         userName.textContent = currentUser.username;
         userId.textContent = `ID: ${currentUser.id}`;
+        
+        // Check if user is admin
+        if (currentUser.email === '26mormaks2013@gmail.com') {
+            userRole.style.display = 'block';
+            if (adminSection) adminSection.style.display = 'block';
+        } else {
+            userRole.style.display = 'none';
+            if (adminSection) adminSection.style.display = 'none';
+        }
     } else {
         userInfo.style.display = 'none';
+        if (userRole) userRole.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
     }
 }
 
@@ -389,11 +402,34 @@ function closeSettingsModal() {
 }
 
 function switchSettingsTab(tab) {
-    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`.settings-tab:nth-child(${tab === 'personalization' ? 1 : 2})`).classList.add('active');
+    const tabNames = ['personalization', 'notifications', 'interface', 'editor', 'export', 'import', 'backup', 'privacy', 'shortcuts', 'about'];
+    const tabIndex = tabNames.indexOf(tab);
     
-    document.getElementById('personalizationTab').style.display = tab === 'personalization' ? 'block' : 'none';
-    document.getElementById('notificationsTab').style.display = tab === 'notifications' ? 'block' : 'none';
+    document.querySelectorAll('.settings-tab').forEach((t, i) => {
+        t.classList.toggle('active', i === tabIndex);
+    });
+    
+    tabNames.forEach(t => {
+        const el = document.getElementById(t + 'Tab');
+        if (el) el.style.display = t === tab ? 'block' : 'none';
+    });
+}
+
+// Admin functions
+function openAdminPanel() {
+    showToast('Панель адміністратора відкрита', 'success');
+}
+
+function viewAllUsers() {
+    showToast('Перегляд користувачів', 'success');
+}
+
+function viewSystemLogs() {
+    showToast('Системні логи', 'success');
+}
+
+function createBackup() {
+    showToast('Бекап створено', 'success');
 }
 
 // User menu toggle
