@@ -9,7 +9,10 @@ import hashlib
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-CORS(app)
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400 * 30  # 30 days
+CORS(app, supports_credentials=True)
 
 # Store database schema in memory
 database_schema = {
@@ -171,7 +174,7 @@ def register():
     users_db[username] = {
         "id": user_id,
         "username": username,
-        "email": email,
+        "email": email or "",
         "password_hash": password_hash,
         "avatar": None,
         "theme": "dark",
@@ -181,15 +184,18 @@ def register():
     
     save_users()
     session['user'] = username
+    session.permanent = True
     
+    user = users_db[username]
     return jsonify({
         "success": True,
         "user": {
-            "id": user_id,
-            "username": username,
-            "email": email,
-            "theme": "dark",
-            "font": "segoe"
+            "id": user['id'],
+            "username": user['username'],
+            "email": user.get('email', ''),
+            "avatar": user.get('avatar'),
+            "theme": user.get('theme', 'dark'),
+            "font": user.get('font', 'segoe')
         }
     })
 
@@ -255,6 +261,7 @@ def update_profile():
     
     username = session['user']
     if username not in users_db:
+        session.pop('user', None)
         return jsonify({"error": "Користувача не знайдено"}), 404
     
     data = request.json
@@ -276,7 +283,7 @@ def update_profile():
         "user": {
             "id": user['id'],
             "username": user['username'],
-            "email": user.get('email'),
+            "email": user.get('email', ''),
             "avatar": user.get('avatar'),
             "theme": user.get('theme', 'dark'),
             "font": user.get('font', 'segoe')
