@@ -86,6 +86,7 @@
                             <div>
                                 <div class="user-name" id="userName"></div>
                                 <div class="user-id" id="userId"></div>
+                                <div class="user-role" id="userRole" style="display:none">👑 Адміністратор</div>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
@@ -306,18 +307,26 @@
                 <div class="settings-tabs">
                     <button class="settings-tab active" onclick="switchSettingsTab('personalization')">Персоналізація</button>
                     <button class="settings-tab" onclick="switchSettingsTab('notifications')">Сповіщення</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('interface')">Інтерфейс</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('editor')">Редактор</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('export')">Експорт</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('import')">Імпорт</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('backup')">Бекап</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('privacy')">Конфіденційність</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('shortcuts')">Гарячі клавіші</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('about')">Про програму</button>
                 </div>
                 
                 <!-- Personalization Tab -->
                 <div class="settings-content" id="personalizationTab">
                     <div class="settings-section">
-                        <h3>Тема інтерфейсу</h3>
+                        <h3>🎨 Тема інтерфейсу</h3>
                         <div class="themes-grid" id="themesGrid">
                             <!-- Themes will be rendered here -->
                         </div>
                     </div>
                     <div class="settings-section">
-                        <h3>Шрифт</h3>
+                        <h3>🔤 Шрифт</h3>
                         <div class="fonts-grid" id="fontsGrid">
                             <!-- Fonts will be rendered here -->
                         </div>
@@ -327,12 +336,213 @@
                 <!-- Notifications Tab -->
                 <div class="settings-content" id="notificationsTab" style="display:none">
                     <div class="settings-section">
-                        <h3>Сповіщення</h3>
+                        <h3>🔔 Сповіщення</h3>
                         <div class="form-group">
                             <label>
                                 <input type="checkbox" id="emailNotifications" checked>
                                 Отримувати сповіщення про оновлення на email
                             </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="pushNotifications">
+                                Push-сповіщення в браузері
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="soundNotifications" checked>
+                                Звукові сповіщення
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Interface Tab -->
+                <div class="settings-content" id="interfaceTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>🖥️ Інтерфейс</h3>
+                        <div class="form-group">
+                            <label>Розмір шрифту комірок</label>
+                            <select id="cellFontSize">
+                                <option value="12">12px</option>
+                                <option value="14" selected>14px</option>
+                                <option value="16">16px</option>
+                                <option value="18">18px</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="showGridLines" checked>
+                                Показувати лінії сітки
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="showRowNumbers" checked>
+                                Показувати номери рядків
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="compactMode">
+                                Компактний режим
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Editor Tab -->
+                <div class="settings-content" id="editorTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>✏️ Редактор</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="autoSave" checked>
+                                Автоматичне збереження
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Інтервал автозбереження (сек)</label>
+                            <input type="number" id="autoSaveInterval" value="30" min="10" max="300">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="confirmDelete" checked>
+                                Підтверджувати видалення
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="showTypeHints" checked>
+                                Показувати підказки типів
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Export Tab -->
+                <div class="settings-content" id="exportTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>📤 Експорт</h3>
+                        <div class="form-group">
+                            <label>Формат за замовчуванням</label>
+                            <select id="defaultExportFormat">
+                                <option value="sql">SQL</option>
+                                <option value="json">JSON</option>
+                                <option value="mysql">MySQL</option>
+                                <option value="postgresql">PostgreSQL</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="includeData" checked>
+                                Включати дані при експорті
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="minifyJson">
+                                Мініфікувати JSON
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Import Tab -->
+                <div class="settings-content" id="importTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>📥 Імпорт</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="validateOnImport" checked>
+                                Валідувати дані при імпорті
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="backupBeforeImport" checked>
+                                Створювати бекап перед імпортом
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Backup Tab -->
+                <div class="settings-content" id="backupTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>💾 Бекап</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="autoBackup">
+                                Автоматичне резервне копіювання
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Частота бекапів</label>
+                            <select id="backupFrequency">
+                                <option value="daily">Щодня</option>
+                                <option value="weekly" selected>Щотижня</option>
+                                <option value="monthly">Щомісяця</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary" onclick="createBackup()">Створити бекап зараз</button>
+                    </div>
+                </div>
+                
+                <!-- Privacy Tab -->
+                <div class="settings-content" id="privacyTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>🔒 Конфіденційність</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="shareAnalytics">
+                                Ділитися анонімною аналітикою
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="showOnlineStatus" checked>
+                                Показувати онлайн статус
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shortcuts Tab -->
+                <div class="settings-content" id="shortcutsTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>⌨️ Гарячі клавіші</h3>
+                        <div class="shortcuts-list">
+                            <div class="shortcut-item">
+                                <span>Зберегти</span>
+                                <kbd>Ctrl + S</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span>Нова таблиця</span>
+                                <kbd>Ctrl + N</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span>Видалити</span>
+                                <kbd>Delete</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span>Скасувати</span>
+                                <kbd>Ctrl + Z</kbd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- About Tab -->
+                <div class="settings-content" id="aboutTab" style="display:none">
+                    <div class="settings-section">
+                        <h3>ℹ️ Про програму</h3>
+                        <div class="about-info">
+                            <p><strong>DB Designer</strong></p>
+                            <p>Версія: 1.0.0</p>
+                            <p>Візуальний конструктор баз даних</p>
+                            <p>© 2026 Всі права захищено</p>
                         </div>
                     </div>
                 </div>
