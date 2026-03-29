@@ -231,6 +231,74 @@ body {
     position: relative;
 }
 
+.user-role {
+    font-size: 0.7rem;
+    color: var(--accent-yellow);
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+/* Admin Section */
+.admin-section {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid var(--accent-yellow);
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.admin-info {
+    margin-bottom: 12px;
+    color: var(--accent-yellow);
+    font-size: 0.85rem;
+}
+
+.admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Shortcuts List */
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.shortcut-item kbd {
+    background: var(--bg-primary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    border: 1px solid var(--border-color);
+}
+
+/* About Info */
+.about-info {
+    text-align: center;
+    padding: 20px;
+}
+
+.about-info p {
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
+.about-info strong {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
 .user-dropdown {
     position: absolute;
     top: 100%;
