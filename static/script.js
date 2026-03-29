@@ -218,6 +218,11 @@ function applyTheme(themeId) {
     document.documentElement.style.setProperty('--bg-primary', theme.bg);
     document.documentElement.style.setProperty('--text-primary', theme.text);
     document.documentElement.style.setProperty('--accent-blue', theme.accent);
+    document.documentElement.style.setProperty('--bg-secondary', theme.bg === '#ffffff' ? '#f5f5f5' : '#252526');
+    document.documentElement.style.setProperty('--bg-tertiary', theme.bg === '#ffffff' ? '#e8e8e8' : '#2d2d2d');
+    document.documentElement.style.setProperty('--border-color', theme.bg === '#ffffff' ? '#d0d0d0' : '#3c3c3c');
+    document.body.style.background = theme.bg;
+    document.body.style.color = theme.text;
 }
 
 // Apply font
