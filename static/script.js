@@ -2,18 +2,400 @@
 let tables = [];
 let activeTableId = null;
 let selectedCell = null;
+let currentUser = null;
+let themes = [];
+let fonts = [];
 
 // Data types
 const DATA_TYPES = ['INTEGER', 'TEXT', 'VARCHAR', 'BOOLEAN', 'DATE', 'DATETIME', 'FLOAT', 'DECIMAL', 'BLOB'];
 
-// Local storage key
+// Local storage keys
 const STORAGE_KEY = 'db_designer_schema';
+const USER_KEY = 'db_designer_user';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadFromLocalStorage();
+    checkAuth();
+    loadThemes();
+    loadFonts();
+    
     if (tables.length === 0) {
         loadTables();
+    }
+    
+    // Setup form handlers
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+});
+
+// Check authentication
+async function checkAuth() {
+    try {
+        const response = await fetch('/api/profile');
+        if (response.ok) {
+            const data = await response.json();
+            currentUser = data.user;
+            updateUserUI();
+            loadUserSettings();
+        }
+    } catch (error) {
+        console.log('Not authenticated');
+    }
+}
+
+// Update user UI
+function updateUserUI() {
+    const userInfo = document.getElementById('userInfo');
+    const userAvatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+    const userId = document.getElementById('userId');
+    
+    if (currentUser) {
+        userInfo.style.display = 'flex';
+        userAvatar.src = currentUser.avatar || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6 0-8 3-8 6v2h16v-2c0-3-2-6-8-6z"/></svg>';
+        userName.textContent = currentUser.username;
+        userId.textContent = `ID: ${currentUser.id}`;
+    } else {
+        userInfo.style.display = 'none';
+    }
+}
+
+// Load user settings
+async function loadUserSettings() {
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch('/api/profile');
+        if (response.ok) {
+            const data = await response.json();
+            const user = data.user;
+            
+            // Apply theme
+            if (user.theme) {
+                applyTheme(user.theme);
+            }
+            
+            // Apply font
+            if (user.font) {
+                applyFont(user.font);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading settings:', error);
+    }
+}
+
+// Load themes
+async function loadThemes() {
+    try {
+        const response = await fetch('/api/themes');
+        if (response.ok) {
+            const data = await response.json();
+            themes = data.themes;
+            renderThemes();
+        }
+    } catch (error) {
+        console.error('Error loading themes:', error);
+    }
+}
+
+// Load fonts
+async function loadFonts() {
+    try {
+        const response = await fetch('/api/fonts');
+        if (response.ok) {
+            const data = await response.json();
+            fonts = data.fonts;
+            renderFonts();
+        }
+    } catch (error) {
+        console.error('Error loading fonts:', error);
+    }
+}
+
+// Render themes
+function renderThemes() {
+    const grid = document.getElementById('themesGrid');
+    grid.innerHTML = '';
+    
+    themes.forEach(theme => {
+        const card = document.createElement('div');
+        card.className = `theme-card ${currentUser?.theme === theme.id ? 'active' : ''}`;
+        card.onclick = () => selectTheme(theme.id);
+        
+        card.innerHTML = `
+            <div class="theme-preview">
+                <div class="theme-color" style="background: ${theme.bg}"></div>
+                <div class="theme-color" style="background: ${theme.accent}"></div>
+            </div>
+            <div class="theme-name">${theme.name}</div>
+        `;
+        
+        grid.appendChild(card);
+    });
+}
+
+// Render fonts
+function renderFonts() {
+    const grid = document.getElementById('fontsGrid');
+    grid.innerHTML = '';
+    
+    fonts.forEach(font => {
+        const card = document.createElement('div');
+        card.className = `font-card ${currentUser?.font === font.id ? 'active' : ''}`;
+        card.onclick = () => selectFont(font.id);
+        
+        card.innerHTML = `
+            <div class="font-name" style="font-family: ${font.family}">${font.name}</div>
+            <div class="font-preview" style="font-family: ${font.family}">Sample text 123</div>
+        `;
+        
+        grid.appendChild(card);
+    });
+}
+
+// Select theme
+async function selectTheme(themeId) {
+    if (!currentUser) {
+        openAuthModal();
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: themeId })
+        });
+        
+        if (response.ok) {
+            currentUser.theme = themeId;
+            applyTheme(themeId);
+            renderThemes();
+            showToast('Тему змінено', 'success');
+        }
+    } catch (error) {
+        showToast('Помилка зміни теми', 'error');
+    }
+}
+
+// Select font
+async function selectFont(fontId) {
+    if (!currentUser) {
+        openAuthModal();
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ font: fontId })
+        });
+        
+        if (response.ok) {
+            currentUser.font = fontId;
+            applyFont(fontId);
+            renderFonts();
+            showToast('Шрифт змінено', 'success');
+        }
+    } catch (error) {
+        showToast('Помилка зміни шрифту', 'error');
+    }
+}
+
+// Apply theme
+function applyTheme(themeId) {
+    const theme = themes.find(t => t.id === themeId);
+    if (!theme) return;
+    
+    document.documentElement.style.setProperty('--bg-primary', theme.bg);
+    document.documentElement.style.setProperty('--text-primary', theme.text);
+    document.documentElement.style.setProperty('--accent-blue', theme.accent);
+}
+
+// Apply font
+function applyFont(fontId) {
+    const font = fonts.find(f => f.id === fontId);
+    if (!font) return;
+    
+    document.documentElement.style.setProperty('--font-family', font.family);
+}
+
+// Auth functions
+function openAuthModal() {
+    document.getElementById('authModal').classList.add('show');
+}
+
+function closeAuthModal() {
+    document.getElementById('authModal').classList.remove('show');
+}
+
+function switchAuthTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.auth-tab:nth-child(${tab === 'login' ? 1 : 2})`).classList.add('active');
+    
+    document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            currentUser = data.user;
+            updateUserUI();
+            loadUserSettings();
+            closeAuthModal();
+            showToast('Успішний вхід', 'success');
+        } else {
+            showToast(data.error || 'Помилка входу', 'error');
+        }
+    } catch (error) {
+        showToast('Помилка з\'єднання', 'error');
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('registerUsername').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            currentUser = data.user;
+            updateUserUI();
+            closeAuthModal();
+            showToast('Реєстрація успішна', 'success');
+        } else {
+            showToast(data.error || 'Помилка реєстрації', 'error');
+        }
+    } catch (error) {
+        showToast('Помилка з\'єднання', 'error');
+    }
+}
+
+async function logout() {
+    try {
+        await fetch('/api/logout', { method: 'POST' });
+        currentUser = null;
+        updateUserUI();
+        showToast('Вихід виконано', 'success');
+    } catch (error) {
+        showToast('Помилка виходу', 'error');
+    }
+}
+
+// Profile functions
+function openProfile() {
+    if (!currentUser) {
+        openAuthModal();
+        return;
+    }
+    
+    document.getElementById('profileAvatar').src = currentUser.avatar || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6 0-8 3-8 6v2h16v-2c0-3-2-6-8-6z"/></svg>';
+    document.getElementById('profileUsername').value = currentUser.username;
+    document.getElementById('profileId').value = currentUser.id;
+    document.getElementById('profileEmail').value = currentUser.email || '';
+    
+    document.getElementById('profileModal').classList.add('show');
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').classList.remove('show');
+}
+
+function uploadAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const avatar = e.target.result;
+        document.getElementById('profileAvatar').src = avatar;
+    };
+    reader.readAsDataURL(file);
+}
+
+async function saveProfile() {
+    const email = document.getElementById('profileEmail').value;
+    const avatar = document.getElementById('profileAvatar').src;
+    
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, avatar })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            currentUser = data.user;
+            updateUserUI();
+            showToast('Профіль збережено', 'success');
+        } else {
+            showToast('Помилка збереження', 'error');
+        }
+    } catch (error) {
+        showToast('Помилка з\'єднання', 'error');
+    }
+}
+
+// Settings functions
+function openSettings() {
+    if (!currentUser) {
+        openAuthModal();
+        return;
+    }
+    
+    document.getElementById('settingsModal').classList.add('show');
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.remove('show');
+}
+
+function switchSettingsTab(tab) {
+    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.settings-tab:nth-child(${tab === 'personalization' ? 1 : 2})`).classList.add('active');
+    
+    document.getElementById('personalizationTab').style.display = tab === 'personalization' ? 'block' : 'none';
+    document.getElementById('notificationsTab').style.display = tab === 'notifications' ? 'block' : 'none';
+}
+
+// User menu toggle
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-menu')) {
+        document.getElementById('userDropdown').classList.remove('show');
     }
 });
 
